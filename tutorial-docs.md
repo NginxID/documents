@@ -64,3 +64,4 @@
 ##### [Red Hat / CentOS Install nginx as reverse proxy for apache server](http://blog.roozbehk.com/post/24568560912/nginx-as-reverse-proxy-to-apache-server)
 
 ##### [Passing Uncontrolled Requests](https://www.facebook.com/groups/nginx.banget.indonesia/permalink/336240946532446/)
+##### [Cara Konfigurasi Nginx dan PHP 5.5 FastCGI (FPM) di FreeBSD 9.3] (http://rizkylab.com/cara-konfigurasi-nginx-dan-php-5-5-fastcgi-fpm-di-freebsd-9-3/)
