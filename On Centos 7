@@ -1,0 +1,143 @@
+==>> Install Nginx dan PHP-FPM
+yum update
+
+1. Remi Dependency on CentOS 7 and Red Hat (RHEL) 7
+   rpm -Uvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-1.noarch.rpm
+   
+2. CentOS 7 and Red Hat (RHEL) 7
+   rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+   
+Saya lebih suka menggunakan remi yang ke dua, karena PHP untuk opsi kedua sudah PHP 5.6.3 :D
+Kemudian buat sebuah repo di direktori /etc/yum.repos.d/nginx.repo, dan tambahkan content ke repo file
+
+[nginx]
+name=nginx repo
+baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+gpgcheck=0
+enabled=1
+
+Oke, kita mulai install nginx, php-fpm dan php-common
+Jalankan command berikut :
+
+yum --enablerepo=remi,remi-php56 install nginx php-fpm php-common
+
+Install PHP Modul
+
+yum --enablerepo=remi,remi-php56 install php-opcache php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-pecl-mongo php-pecl-sqlite php-pecl-memcache php-pecl-memcached php-gd php-mbstring php-mcrypt php-xml
+
+stop service httpd 
+
+## Fedora 20/19 and CentOS/RHEL 7 ##
+systemctl stop httpd.service
+
+start service nginx
+
+## Fedora 20/19 and CentOS/RHEL 7 ##
+systemctl start nginx.service
+
+start service php-fpm
+
+## Fedora 20/19 and CentOS/RHEL 7 ##
+systemctl start php-fpm.service
+
+Autostart nginx, php-fpm
+
+## Fedora 20/19 and CentOS/RHEL 7 ##
+systemctl disable httpd.service
+
+## Fedora 20/19 and CentOS/RHEL 7 ##
+systemctl enable nginx.service
+
+## Fedora 20/19 and CentOS/RHEL 7 ##
+systemctl enable php-fpm.service
+
+Edit host config di /etc/nginx/conf.d/default.conf
+
+edit seperti berikut :
+
+ location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm index.php;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    location ~ \.php$ {
+        root           html;
+        fastcgi_pass   127.0.0.1:9000;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  /usr/share/nginx/html$fastcgi_script_name;
+        include        fastcgi_params;
+    }
+
+Jika proses installasi sudah selesai langkah selanjutnya restart nginx dan php-fpm
+Untuk pengetesan apakah installasi php-fpm berjalan baik dan diharapkan, buat sebuah file di /usr/share/nginx/html/phpinfo.php
+
+<?php
+phpinfo();
+?>
+
+cek atau akses http://your-ip/phpinfo.php
+
+==>> Install MariaDB
+Sebelum installasi MariaDB terlebih dahulu menghapus package yang sebelumnya sudah ada
+Jalankan command berikut
+
+yum remove mysql* mysql-server mysql-devel mysql-libs
+
+Disini saya asumsikan menggunakan MariaDB versi 10.0, buat sebuah repo vim /etc/yum.repos.d/MariaDB.repo
+tambahkan content berikut
+
+# MariaDB 10.0 CentOS repository list - created 2014-11-19 14:56 UTC
+# http://mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+
+Kemudian jalankan command dan install MariaDB 10.0
+
+yum install MariaDB-server MariaDB-client
+
+Restart 
+
+/etc/init.d/mysql start
+
+dan coba ketikkan command mysql, default MariaDB user root dan password none (kosong)
+jalankan command berikut :
+
+/usr/bin/mysql_secure_installation
+
+dan isikan password, kemudian ada opsi dan pilih yes dan seterusnya hingga selesai
+
+==>> Open Port untuk request
+
+Jalankan iptables --line -vnL perhatikan line 7, lalu tambahkan dengan command berikut :
+
+iptables -I INPUT 7 -i em4 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
+
+iptables -I INPUT 7 -i em4 -p tcp --dport 3306 -m state --state NEW,ESTABLISHED -j ACCEPT
+
+Restart service iptables restart
+
+Tambahkan rule baru di Firewall
+
+firewall-cmd --permanent --zone=public --add-service=http
+
+Terima kasih semoga membantu
