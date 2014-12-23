@@ -21,7 +21,7 @@ Jalankan command berikut :
 
 yum --enablerepo=remi,remi-php56 install nginx php-fpm php-common
 
-Install PHP Modul
+Install PHP Modul 
 
 yum --enablerepo=remi,remi-php56 install php-opcache php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pgsql php-pecl-mongo php-pecl-sqlite php-pecl-memcache php-pecl-memcached php-gd php-mbstring php-mcrypt php-xml
 
